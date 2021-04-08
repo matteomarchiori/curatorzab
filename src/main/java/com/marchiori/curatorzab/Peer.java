@@ -210,7 +210,7 @@ public final class Peer {
     /**
      * Leader election (phase 0) in ZAB.
      */
-    public void electLeader() {
+    private void electLeader() {
         zabFinished = false;
         if (!timer.isShutdown()) {
             timer.shutdown();
@@ -236,14 +236,14 @@ public final class Peer {
                 log("I'm the prospective leader.");
                 state = State.LEADING;
                 if (nodes.size() > MIN_CLUSTER) {
-                    discoveryLeader1();
+                    discoveryLeaderWaitQuorum();
                 } else {
-                    broadcastLeader1();
+                    broadcastLeader();
                 }
             } else {
                 log("I'm a follower.");
                 state = State.FOLLOWING;
-                discoveryFollower1();
+                discoveryFollowerInfo();
             }
         } catch (Exception ex) {
             Logger.getLogger(Peer.class.getName()).log(Level.SEVERE, null, ex);
@@ -253,7 +253,7 @@ public final class Peer {
     /**
      * Discovery (phase 1) of follower in ZAB algorithm before NEWEPOCH.
      */
-    public void discoveryFollower1() {
+    private void discoveryFollowerInfo() {
         log("Phase 1: discovery (follower)");
         phase = Phase.DISCOVERY;
         try {
@@ -277,7 +277,7 @@ public final class Peer {
      *
      * @param ne NEWEPOCH message.
      */
-    public void discoveryFollower2(final NewEpoch ne) {
+    private void discoveryFollowerAckEpoch(final NewEpoch ne) {
         log("NEWEPOCH received from " + ne.getSender());
         try {
             if (ne.getEpoch() >= acceptedEpoch) {
@@ -292,7 +292,7 @@ public final class Peer {
                         );
 
                 mutex.release();
-                synchronizationFollower1();
+                synchronizationFollowerWaitNewLeader();
             } else {
                 state = State.ELECTION;
                 electLeader();
@@ -305,11 +305,12 @@ public final class Peer {
     /**
      * Discovery (phase 1) of leader in ZAB algorithm before quorum.
      */
-    public void discoveryLeader1() {
+    private void discoveryLeaderWaitQuorum() {
         log("Phase 1: discovery (leader)");
         phase = Phase.DISCOVERY;
         quorum = new ArrayList<>();
-        waitQuorum1();
+        ackepochs = new ArrayList<>();
+        waitQuorum();
     }
 
     /**
@@ -317,7 +318,7 @@ public final class Peer {
      *
      * @param ae ACKEPOCH message.
      */
-    public void discoveryLeader2(final AckEpoch ae) {
+    private void discoveryLeaderWaitAckEpochs(final AckEpoch ae) {
         log("ACKEPOCH received from " + ae.getSender());
         ackepochs.add(ae);
         afterQuorum();
@@ -326,7 +327,7 @@ public final class Peer {
     /**
      * Discovery (phase 1) of leader in ZAB algorithm waiting quorum.
      */
-    public void waitQuorum1() {
+    private void waitQuorum() {
         log("Waiting for quorum...");
         try {
             List<String> nodes = CURATOR.getChildren()
@@ -376,30 +377,29 @@ public final class Peer {
      *
      * @param finfo FOLLOWERINFO message.
      */
-    public void waitQuorum2(final FollowerInfo finfo) {
+    private void receiveFollowerInfo(final FollowerInfo finfo) {
         log("FOLLOWERINFO received from " + finfo.getSender());
         quorum.add(finfo);
-        waitQuorum1();
+        waitQuorum();
     }
 
     /**
      * Discovery (phase 1) of leader in ZAB algorithm after quorum.
      */
-    public void afterQuorum() {
+    private void afterQuorum() {
         /*Do not count myself in ACKEPOCHS...*/
         if (ackepochs.size() <= (quorum.size() - 1)) {
             log("Wait ACKEPOCH...");
             waitMessage();
         } else {
-            afterAcks();
+            afterAckEpochs();
         }
     }
 
     /**
      * Discovery (phase 1) of leader in ZAB algorithm after acks.
      */
-    public void afterAcks() {
-        ackepochs = new ArrayList<>();
+    private void afterAckEpochs() {
         int maxEpoch = acceptedEpoch;
         Zxid maxZxid = new Zxid(0, 0);
         for (AckEpoch ae : ackepochs) {
@@ -420,16 +420,16 @@ public final class Peer {
             }
         }
         if (quorum.size() > 0) {
-            synchronizationLeader1(maxEpoch);
+            synchronizationLeaderWaitAckNewLeader(maxEpoch);
         } else {
-            broadcastLeader1();
+            broadcastLeader();
         }
     }
 
     /**
      * Synchronization (phase 2) of follower in ZAB algorithm before NEWLEADER.
      */
-    public void synchronizationFollower1() {
+    private void synchronizationFollowerWaitNewLeader() {
         log("Phase 2: synchronization (follower)");
         phase = Phase.SYNCHRONIZATION;
         log("Wait NEWLEADER...");
@@ -441,7 +441,7 @@ public final class Peer {
      *
      * @param nl NEWLEADER message.
      */
-    public void synchronizationFollower2(final NewLeader nl) {
+    private void synchronizationFollowerWaitCommitLeader(final NewLeader nl) {
         log("NEWLEADER received from " + nl.getSender());
         try {
             if (acceptedEpoch == nl.getEpoch()) {
@@ -474,10 +474,10 @@ public final class Peer {
      *
      * @param commit COMMITLEADER message.
      */
-    public void synchronizationFollower3(final CommitLeader commit) {
+    private void synchronizationFollowerToBroadcast(final CommitLeader commit) {
         log("COMMITLEADER received from " + commit.getSender());
         //deliver outstandings transactions in Zxid order.
-        broadcastFollower1();
+        broadcastFollowerWaitTransaction();
     }
 
     /**
@@ -485,7 +485,7 @@ public final class Peer {
      *
      * @param epoch epoch from follower.
      */
-    public void synchronizationLeader1(final int epoch) {
+    private void synchronizationLeaderWaitAckNewLeader(final int epoch) {
         log("Phase 2: synchronization (leader)");
         phase = Phase.SYNCHRONIZATION;
         quorum.forEach((FollowerInfo follower) -> {
@@ -512,7 +512,7 @@ public final class Peer {
                 waitMessage();
             }
         } else {
-            broadcastLeader1();
+            broadcastLeader();
         }
     }
 
@@ -521,22 +521,14 @@ public final class Peer {
      *
      * @param anl ACKNEWLEADER message.
      */
-    public void synchronizationLeader2(final AckNewLeader anl) {
+    private void synchronizationLeaderWaitMoreAcks(final AckNewLeader anl) {
         log("ACKEWLEADER received from " + anl.getSender());
         acksnewleader.add(anl);
-        waitmoreacks();
-    }
-
-    /**
-     * Synchronization (phase 2) of leader in ZAB algorithm waiting more
-     * ACKNEWLEADER.
-     */
-    public void waitmoreacks() {
         if (acksnewleader.size() < quorum.size()) {
             log("Wait ACKNEWLEADER...");
             waitMessage();
         } else {
-            afteracks();
+            afterAcksNewLeader();
         }
     }
 
@@ -544,7 +536,7 @@ public final class Peer {
      * Synchronization (phase 2) of leader in ZAB algorithm after enough
      * ACKNEWLEADER.
      */
-    public void afteracks() {
+    private void afterAcksNewLeader() {
         quorum.forEach((FollowerInfo follower) -> {
             try {
                 CommitLeader commit = new CommitLeader(id);
@@ -562,13 +554,13 @@ public final class Peer {
                         .log(Level.SEVERE, null, ex);
             }
         });
-        broadcastLeader1();
+        broadcastLeader();
     }
 
     /**
      * Broadcast (phase 3) of follower in ZAB algorithm.
      */
-    public void broadcastFollower1() {
+    private void broadcastFollowerWaitTransaction() {
         log("Phase 3: broadcast (follower)");
         phase = Phase.BROADCAST;
         if (state == State.LEADING) {
@@ -585,7 +577,7 @@ public final class Peer {
      *
      * @param t TRANSACTION from leader.
      */
-    public void broadcastFollower2(final Transaction t) {
+    private void broadcastFollowerWaitCommit(final Transaction t) {
         log("TRANSACTION received from " + t.getSender());
         try {
             history.add(t);
@@ -609,7 +601,7 @@ public final class Peer {
      *
      * @param c COMMIT from leader.
      */
-    public void broadcastFollower3(final Commit c) {
+    private void broadcastFollowerAfterCommit(final Commit c) {
         log("COMMIT received from " + c.getSender());
         //while outstanding older transitions, do nothing
         //then deliver transition to the client
@@ -619,7 +611,7 @@ public final class Peer {
     /**
      * Broadcast (phase 3) of leader in ZAB algorithm.
      */
-    public void broadcastLeader1() {
+    private void broadcastLeader() {
         acksnewleader = new ArrayList<>();
         log("Phase 3: broadcast (leader)");
         phase = Phase.BROADCAST;
@@ -634,7 +626,7 @@ public final class Peer {
      *
      * @param fi FOLLOWERINFO from new follower.
      */
-    public void broadcastLeader2(final FollowerInfo fi) {
+    private void broadcastLeaderNewFollower(final FollowerInfo fi) {
         log("FOLLOWERINFO received from " + fi.getSender());
         try {
             NewEpoch ne = new NewEpoch(currentEpoch, id);
@@ -660,7 +652,7 @@ public final class Peer {
      *
      * @param anl ACKNEWLEADER from follower.
      */
-    public void broadcastLeader3(final AckNewLeader anl) {
+    private void broadcastLeaderAfterAckNewLeader(final AckNewLeader anl) {
         log("ACKNEWLEADER received from " + anl.getSender());
         try {
             CommitLeader cl = new CommitLeader(id);
@@ -685,7 +677,7 @@ public final class Peer {
      *
      * @param ack ACK from follower.
      */
-    public void broadcastleader4(final Ack ack) {
+    private void broadcastLeaderAfterAck(final Ack ack) {
         log("ACK received from " + ack.getSender());
         while (acks.size() < quorum.size()) {
             acks.add(ack);
@@ -716,7 +708,7 @@ public final class Peer {
      *
      * @param propose PROPOSE from follower.
      */
-    public void broadcastLeader5(final Propose propose) {
+    private void broadcastLeaderAfterPropose(final Propose propose) {
         log("PROPOSE received from " + propose.getSender());
         Zxid newZxid = new Zxid(lastZxid.getE(), lastZxid.getC() + 1);
         lastZxid = newZxid;
@@ -744,7 +736,7 @@ public final class Peer {
     /**
      * Manage new messages.
      */
-    public void waitMessage() {
+    private void waitMessage() {
         try {
             synchronized (CURATOR) {
                 CURATOR.wait();
@@ -763,18 +755,18 @@ public final class Peer {
             mutex.release();
             switch (m.getType()) {
                 case ACK:
-                    broadcastleader4((Ack) m);
+                    broadcastLeaderAfterAck((Ack) m);
                     break;
                 case ACKEPOCH:
-                    discoveryLeader2((AckEpoch) m);
+                    discoveryLeaderWaitAckEpochs((AckEpoch) m);
                     break;
                 case ACKNEWLEADER:
                     switch (phase) {
                         case SYNCHRONIZATION:
-                            synchronizationLeader2((AckNewLeader) m);
+                            synchronizationLeaderWaitMoreAcks((AckNewLeader) m);
                             break;
                         case BROADCAST:
-                            broadcastLeader3((AckNewLeader) m);
+                            broadcastLeaderAfterAckNewLeader((AckNewLeader) m);
                             break;
                         default:
                             waitMessage();
@@ -785,18 +777,18 @@ public final class Peer {
                     waitMessage();
                     break;
                 case COMMIT:
-                    broadcastFollower3((Commit) m);
+                    broadcastFollowerAfterCommit((Commit) m);
                     break;
                 case COMMITLEADER:
-                    synchronizationFollower3((CommitLeader) m);
+                    synchronizationFollowerToBroadcast((CommitLeader) m);
                     break;
                 case FOLLOWERINFO:
                     switch (phase) {
                         case DISCOVERY:
-                            waitQuorum2((FollowerInfo) m);
+                            receiveFollowerInfo((FollowerInfo) m);
                             break;
                         case BROADCAST:
-                            broadcastLeader2((FollowerInfo) m);
+                            broadcastLeaderNewFollower((FollowerInfo) m);
                             break;
                         default:
                             waitMessage();
@@ -804,16 +796,16 @@ public final class Peer {
                     }
                     break;
                 case NEWEPOCH:
-                    discoveryFollower2((NewEpoch) m);
+                    discoveryFollowerAckEpoch((NewEpoch) m);
                     break;
                 case NEWLEADER:
-                    synchronizationFollower2((NewLeader) m);
+                    synchronizationFollowerWaitCommitLeader((NewLeader) m);
                     break;
                 case PROPOSE:
-                    broadcastLeader5((Propose) m);
+                    broadcastLeaderAfterPropose((Propose) m);
                     break;
                 case TRANSACTION:
-                    broadcastFollower2((Transaction) m);
+                    broadcastFollowerWaitCommit((Transaction) m);
                     break;
                 default:
                     break;
@@ -827,7 +819,7 @@ public final class Peer {
     /**
      * Add some delay if needed.
      */
-    public void delay() {
+    private void delay() {
         try {
             Thread.sleep(DELAY);
         } catch (InterruptedException ex) {
@@ -840,7 +832,7 @@ public final class Peer {
     /**
      * Listener for leader.
      */
-    class LeaderListener implements PathChildrenCacheListener {
+    private class LeaderListener implements PathChildrenCacheListener {
 
         /**
          * Something happened in the cluster.
@@ -871,7 +863,7 @@ public final class Peer {
     /**
      * Listener for myself.
      */
-    class PeerListener implements NodeCacheListener {
+    private class PeerListener implements NodeCacheListener {
 
         /**
          * Some message arrived.
@@ -893,7 +885,7 @@ public final class Peer {
      *
      * @param log string to be printed.
      */
-    public void log(final String log) {
+    private void log(final String log) {
         System.out.println(
                 MILLISECONDS.format(
                         new java.util.Date(System.currentTimeMillis())
