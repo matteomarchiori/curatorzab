@@ -280,7 +280,7 @@ public final class Peer {
     public void discoveryFollower2(final NewEpoch ne) {
         log("NEWEPOCH received from " + ne.getSender());
         try {
-            if (ne.getEpoch() > acceptedEpoch) {
+            if (ne.getEpoch() >= acceptedEpoch) {
                 acceptedEpoch = ne.getEpoch();
                 AckEpoch ae = new AckEpoch(currentEpoch, history, lastZxid, id);
                 log("Send ACKEPOCH to " + prospective);
