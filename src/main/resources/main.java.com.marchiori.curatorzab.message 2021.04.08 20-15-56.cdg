@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="main.java.com.marchiori.curatorzab.message">
+  <ClassDiagramComponents>
+    <Class name="Ack" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1796.0" yPosition="1418.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="s"/>
+        </Constructor>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="AckEpoch" package="com.marchiori.curatorzab.message" visibility="public" xPosition="326.0" yPosition="403.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+        <Field name="history" type="List&lt;Transaction&gt;" visibility="private" isFinal="true"/>
+        <Field name="zxid" type="Zxid" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="e"/>
+          <Argument type="List&lt;Transaction&gt;" name="h"/>
+          <Argument type="Zxid" name="z"/>
+          <Argument type="String" name="s"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getEpoch" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="getHistory" returnType="List&lt;Transaction&gt;" visibility="public" isFinal="true"/>
+        <Method name="getZxid" returnType="Zxid" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="AckNewLeader" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1452.0" yPosition="1653.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+        <Field name="history" type="List&lt;Transaction&gt;" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="e"/>
+          <Argument type="List&lt;Transaction&gt;" name="h"/>
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getEpoch" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="getHistory" returnType="List&lt;Transaction&gt;" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="Clear" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1108.0" yPosition="1893.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="Commit" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1900.0" yPosition="1000.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="CommitLeader" package="com.marchiori.curatorzab.message" visibility="public" xPosition="680.0" yPosition="158.0">
+      <Fields/>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods/>
+    </Class>
+    <Class name="FollowerInfo" package="com.marchiori.curatorzab.message" visibility="public" xPosition="326.0" yPosition="1596.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="String" name="sender"/>
+          <Argument type="int" name="e"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getAcceptedEpoch" returnType="int" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="Message" package="com.marchiori.curatorzab.message" visibility="public" isAbstract="true" xPosition="1511.0" yPosition="259.0">
+      <Fields>
+        <Field name="type" type="MessageType" visibility="private" isFinal="true"/>
+        <Field name="sender" type="String" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="MessageType" name="t"/>
+          <Argument type="String" name="s"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getType" returnType="MessageType" visibility="public" isFinal="true"/>
+        <Method name="getSender" returnType="String" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="NewEpoch" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1108.0" yPosition="106.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="e"/>
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getEpoch" returnType="int" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="NewLeader" package="com.marchiori.curatorzab.message" visibility="public" xPosition="1796.0" yPosition="581.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+        <Field name="history" type="List&lt;Transaction&gt;" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="e"/>
+          <Argument type="List&lt;Transaction&gt;" name="h"/>
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getEpoch" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="getHistory" returnType="List&lt;Transaction&gt;" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="Propose" package="com.marchiori.curatorzab.message" visibility="public" xPosition="126.0" yPosition="1215.0">
+      <Fields>
+        <Field name="v" type="int" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="value"/>
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getV" returnType="int" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Class name="Transaction" package="com.marchiori.curatorzab.message" visibility="public" xPosition="680.0" yPosition="1841.0">
+      <Fields>
+        <Field name="v" type="int" visibility="private" isFinal="true"/>
+        <Field name="z" type="Zxid" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="value"/>
+          <Argument type="Zxid" name="zxid"/>
+          <Argument type="String" name="sender"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getV" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="getZ" returnType="Zxid" visibility="public" isFinal="true"/>
+      </Methods>
+    </Class>
+    <Enum name="MessageType" package="com.marchiori.curatorzab.message" visibility="public" xPosition="126.0" yPosition="784.0">
+      <Literals>
+        <Literal name="ACK"/>
+        <Literal name="ACKEPOCH"/>
+        <Literal name="ACKNEWLEADER"/>
+        <Literal name="CLEAR"/>
+        <Literal name="COMMIT"/>
+        <Literal name="COMMITLEADER"/>
+        <Literal name="FOLLOWERINFO"/>
+        <Literal name="NEWEPOCH"/>
+        <Literal name="NEWLEADER"/>
+        <Literal name="PROPOSE"/>
+        <Literal name="RETRY"/>
+        <Literal name="TRANSACTION"/>
+      </Literals>
+    </Enum>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.Commit" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.Ack" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.AckNewLeader" target="com.marchiori.curatorzab.message.Message"/>
+    <UseRelation source="com.marchiori.curatorzab.message.Message" target="com.marchiori.curatorzab.message.MessageType" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="com.marchiori.curatorzab.message.AckEpoch" target="com.marchiori.curatorzab.message.Transaction" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="com.marchiori.curatorzab.message.AckNewLeader" target="com.marchiori.curatorzab.message.Transaction" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <UseRelation source="com.marchiori.curatorzab.message.NewLeader" target="com.marchiori.curatorzab.message.Transaction" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.Propose" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.AckEpoch" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.CommitLeader" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.Clear" target="com.marchiori.curatorzab.message.Message"/>
+    <HasRelation name="history" source="com.marchiori.curatorzab.message.AckNewLeader" target="com.marchiori.curatorzab.message.Transaction" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="List&lt;Transaction&gt;"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.NewLeader" target="com.marchiori.curatorzab.message.Message"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.NewEpoch" target="com.marchiori.curatorzab.message.Message"/>
+    <HasRelation name="history" source="com.marchiori.curatorzab.message.NewLeader" target="com.marchiori.curatorzab.message.Transaction" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="List&lt;Transaction&gt;"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.FollowerInfo" target="com.marchiori.curatorzab.message.Message"/>
+    <HasRelation name="type" source="com.marchiori.curatorzab.message.Message" target="com.marchiori.curatorzab.message.MessageType" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="history" source="com.marchiori.curatorzab.message.AckEpoch" target="com.marchiori.curatorzab.message.Transaction" type="Aggregation" sourceCardinality="1..1" targetCardinality="0..*" collectionType="List&lt;Transaction&gt;"/>
+    <IsRelation name="is" source="com.marchiori.curatorzab.message.Transaction" target="com.marchiori.curatorzab.message.Message"/>
+  </ClassDiagramRelations>
+</ClassDiagram>

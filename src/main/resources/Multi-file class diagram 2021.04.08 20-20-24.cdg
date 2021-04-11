@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="Multi-file class diagram">
+  <ClassDiagramComponents>
+    <Class name="Peer" package="com.marchiori.curatorzab" visibility="public" isFinal="true" xPosition="20.0" yPosition="20.0">
+      <Fields>
+        <Field name="CURATOR" type="CuratorFramework" visibility="private" isStatic="true" isFinal="true"/>
+        <Field name="me" type="NodeCache" visibility="private" isFinal="true"/>
+        <Field name="leader" type="PathChildrenCache" visibility="private" isFinal="true"/>
+        <Field name="mutex" type="InterProcessSemaphoreMutex" visibility="private" isFinal="true"/>
+        <Field name="zabFinished" type="boolean" visibility="private"/>
+        <Field name="timer" type="ScheduledExecutorService" visibility="private"/>
+        <Field name="state" type="State" visibility="private"/>
+        <Field name="phase" type="Phase" visibility="private"/>
+        <Field name="id" type="String" visibility="private" isFinal="true"/>
+        <Field name="prospective" type="String" visibility="private"/>
+        <Field name="ackepochs" type="List&lt;AckEpoch&gt;" visibility="private"/>
+        <Field name="acksnewleader" type="List&lt;AckNewLeader&gt;" visibility="private"/>
+        <Field name="acks" type="List&lt;Ack&gt;" visibility="private"/>
+        <Field name="quorum" type="List&lt;FollowerInfo&gt;" visibility="private"/>
+        <Field name="history" type="List&lt;Transaction&gt;" visibility="private"/>
+        <Field name="acceptedEpoch" type="int" visibility="private"/>
+        <Field name="currentEpoch" type="int" visibility="private"/>
+        <Field name="lastZxid" type="Zxid" visibility="private"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public"/>
+      </Constructors>
+      <Methods>
+        <Method name="electLeader" returnType="void" visibility="private"/>
+        <Method name="discoveryFollowerInfo" returnType="void" visibility="private"/>
+        <Method name="discoveryFollowerAckEpoch" returnType="void" visibility="private">
+          <Argument type="NewEpoch" name="ne"/>
+        </Method>
+        <Method name="discoveryLeaderWaitQuorum" returnType="void" visibility="private"/>
+        <Method name="discoveryLeaderWaitAckEpochs" returnType="void" visibility="private">
+          <Argument type="AckEpoch" name="ae"/>
+        </Method>
+        <Method name="waitQuorum" returnType="void" visibility="private"/>
+        <Method name="receiveFollowerInfo" returnType="void" visibility="private">
+          <Argument type="FollowerInfo" name="finfo"/>
+        </Method>
+        <Method name="afterQuorum" returnType="void" visibility="private"/>
+        <Method name="afterAckEpochs" returnType="void" visibility="private"/>
+        <Method name="synchronizationFollowerWaitNewLeader" returnType="void" visibility="private"/>
+        <Method name="synchronizationFollowerWaitCommitLeader" returnType="void" visibility="private">
+          <Argument type="NewLeader" name="nl"/>
+        </Method>
+        <Method name="synchronizationFollowerToBroadcast" returnType="void" visibility="private">
+          <Argument type="CommitLeader" name="commit"/>
+        </Method>
+        <Method name="synchronizationLeaderWaitAckNewLeader" returnType="void" visibility="private">
+          <Argument type="int" name="epoch"/>
+        </Method>
+        <Method name="synchronizationLeaderWaitMoreAcks" returnType="void" visibility="private">
+          <Argument type="AckNewLeader" name="anl"/>
+        </Method>
+        <Method name="afterAcksNewLeader" returnType="void" visibility="private"/>
+        <Method name="broadcastFollowerWaitTransaction" returnType="void" visibility="private"/>
+        <Method name="broadcastFollowerWaitCommit" returnType="void" visibility="private">
+          <Argument type="Transaction" name="t"/>
+        </Method>
+        <Method name="broadcastFollowerAfterCommit" returnType="void" visibility="private">
+          <Argument type="Commit" name="c"/>
+        </Method>
+        <Method name="broadcastLeader" returnType="void" visibility="private"/>
+        <Method name="broadcastLeaderNewFollower" returnType="void" visibility="private">
+          <Argument type="FollowerInfo" name="fi"/>
+        </Method>
+        <Method name="broadcastLeaderAfterAckNewLeader" returnType="void" visibility="private">
+          <Argument type="AckNewLeader" name="anl"/>
+        </Method>
+        <Method name="broadcastLeaderAfterAck" returnType="void" visibility="private">
+          <Argument type="Ack" name="ack"/>
+        </Method>
+        <Method name="broadcastLeaderAfterPropose" returnType="void" visibility="private">
+          <Argument type="Propose" name="propose"/>
+        </Method>
+        <Method name="waitMessage" returnType="void" visibility="private"/>
+        <Method name="delay" returnType="void" visibility="private"/>
+        <Method name="log" returnType="void" visibility="private">
+          <Argument type="String" name="log"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Zxid" package="com.marchiori.curatorzab" visibility="public" xPosition="523.0" yPosition="340.0">
+      <Fields>
+        <Field name="epoch" type="int" visibility="private" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="public">
+          <Argument type="int" name="e"/>
+          <Argument type="int" name="c"/>
+        </Constructor>
+      </Constructors>
+      <Methods>
+        <Method name="getE" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="getC" returnType="int" visibility="public" isFinal="true"/>
+        <Method name="compareTo" returnType="int" visibility="public" isFinal="true">
+          <Argument type="Zxid" name="t"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class name="Configuration" package="com.marchiori.curatorzab.configuration" visibility="public" isFinal="true" xPosition="492.0" yPosition="20.0">
+      <Fields>
+        <Field name="ZOOKEEPER_INSTANCE" type="String" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="SESSION_TIMEOUT" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="ELECTION_NAMESPACE" type="String" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="MAX_RETRIES" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="MILLISECONDS" type="SimpleDateFormat" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="MIN_TIMEOUT" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="MAX_TIMEOUT" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="OLDER_NODE" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="MIN_CLUSTER" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="LOCK_NODES" type="int" visibility="public" isStatic="true" isFinal="true"/>
+        <Field name="DELAY" type="int" visibility="public" isStatic="true" isFinal="true"/>
+      </Fields>
+      <Constructors>
+        <Constructor visibility="private"/>
+      </Constructors>
+      <Methods/>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations>
+    <UseRelation source="com.marchiori.curatorzab.Zxid" target="com.marchiori.curatorzab.Zxid" sourceCardinality="1..1" targetCardinality="1..1"/>
+    <HasRelation name="lastZxid" source="com.marchiori.curatorzab.Peer" target="com.marchiori.curatorzab.Zxid" type="Aggregation" sourceCardinality="1..1" targetCardinality="1..1"/>
+  </ClassDiagramRelations>
+</ClassDiagram>
