@@ -1,4 +1,2 @@
 # curatorzab
-PoC for Runtimes for Concurrency and Distribution
-
-Try to reproduce some aspects of Zab (ZooKeeper Atomic Broadcast) protocol.
+PoC for Runtimes for Concurrency and Distribution, try to reproduce some aspects of Zab (ZooKeeper Atomic Broadcast) protocol.
